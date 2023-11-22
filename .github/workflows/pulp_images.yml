@@ -298,6 +298,36 @@ jobs:
           curl --fail http://localhost:8080/pulp/api/v3/status/ | jq
         shell: bash
 
+      - name: Test manifest build
+        run: |
+          if [[ "${{ matrix.app.image_name }}" == "pulp" || "${{ matrix.app.image_name }}" == "galaxy" ]]; then
+            images="${{ matrix.app.image_name }}"
+          else
+            images="${{ matrix.app.image_name }} ${{ matrix.app.web_image }}"
+          fi
+          for registry in ghcr.io docker.io quay.io; do
+            for image_name_looped in $images; do
+              if [ "${{ matrix.image_variant }}" == "stable" ]; then
+                # latest branch stable variant gets tagged as both "latest" and "stable"
+                if [ "${TEMP_APP_TAG}" == "latest" ]; then
+                  tags="${APP_BRANCH} ${APP_VERSION} ${{ matrix.image_variant }} latest"
+                else
+                  tags="${APP_BRANCH} ${APP_VERSION}"
+                fi
+              else
+                # The matrix should ensure that the nightly variant only ever pertains to the "latest" branch, but let's be extra safe
+                if [ "${GITHUB_REF_NAME%/*}" == "latest" ]; then
+                  # "nightly" is a special case, no version / branch tags
+                  tags="nightly"
+                fi
+              fi
+              for tag in $tags; do
+                podman manifest create ${registry}/pulp/${image_name_looped}:${tag} containers-storage:localhost/pulp/${image_name_looped}:${TEMP_BASE_TAG}-amd64 containers-storage:localhost/pulp/${image_name_looped}:${TEMP_BASE_TAG}-arm64
+              done
+            done
+          done
+        shell: bash
+
       - name: Github login
         if: github.event_name != 'pull_request'
         env:
