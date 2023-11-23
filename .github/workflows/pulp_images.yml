@@ -305,20 +305,6 @@ jobs:
           PULP_GITHUB_USERNAME: ${{ github.actor }}
         run: echo "$PULP_GITHUB_TOKEN" | podman login -u "$PULP_GITHUB_USERNAME" --password-stdin ghcr.io
 
-      - name: Docker login
-        if: github.event_name != 'pull_request'
-        env:
-          DOCKER_BOT_PASSWORD: ${{ secrets.DOCKER_BOT_PASSWORD }}
-          DOCKER_BOT_USERNAME: ${{ secrets.DOCKER_BOT_USERNAME }}
-        run: echo "$DOCKER_BOT_PASSWORD" | podman login -u "$DOCKER_BOT_USERNAME" --password-stdin docker.io
-
-      - name: Quay login
-        if: github.event_name != 'pull_request'
-        env:
-          QUAY_BOT_PASSWORD: ${{ secrets.QUAY_BOT_PASSWORD }}
-          QUAY_BOT_USERNAME: ${{ secrets.QUAY_BOT_USERNAME }}
-        run: echo "$QUAY_BOT_PASSWORD" | podman login -u "$QUAY_BOT_USERNAME" --password-stdin quay.io
-
       - name: Push base images to registries
         if: github.event_name != 'pull_request'
         run: |
@@ -332,8 +318,8 @@ jobs:
                 tags="${BASE_BRANCH} ${BASE_VERSION}"
               fi
               for tag in $tags; do
-                podman manifest create ${registry}/pulp/${image_name_looped}:${tag} containers-storage:localhost/pulp/${image_name_looped}:${TEMP_BASE_TAG}-amd64 containers-storage:localhost/pulp/${image_name_looped}:${TEMP_BASE_TAG}-arm64
-                podman manifest push --all ${registry}/pulp/${image_name_looped}:${tag} ${registry}/stopmotioncuber/${image_name_looped}:${tag}
+                podman manifest create ${registry}/stopmotioncuber/${image_name_looped}:${tag} containers-storage:localhost/pulp/${image_name_looped}:${TEMP_BASE_TAG}-amd64 containers-storage:localhost/pulp/${image_name_looped}:${TEMP_BASE_TAG}-arm64
+                podman manifest push --all ${registry}/stopmotioncuber/${image_name_looped}:${tag} ${registry}/stopmotioncuber/${image_name_looped}:${tag}
               done
             done
           done
@@ -366,8 +352,8 @@ jobs:
                 fi
               fi
               for tag in $tags; do
-                podman manifest create ${registry}/pulp/${image_name_looped}:${tag} containers-storage:localhost/pulp/${image_name_looped}:${TEMP_BASE_TAG}-amd64 containers-storage:localhost/pulp/${image_name_looped}:${TEMP_BASE_TAG}-arm64
-                podman manifest push --all ${registry}/pulp/${image_name_looped}:${tag} ${registry}/stopmotioncuber/${image_name_looped}:${tag}
+                podman manifest create ${registry}/stopmotioncuber/${image_name_looped}:${tag} containers-storage:localhost/pulp/${image_name_looped}:${TEMP_BASE_TAG}-amd64 containers-storage:localhost/pulp/${image_name_looped}:${TEMP_BASE_TAG}-arm64
+                podman manifest push --all ${registry}/stopmotioncuber/${image_name_looped}:${tag} ${registry}/stopmotioncuber/${image_name_looped}:${tag}
               done
             done
           done
